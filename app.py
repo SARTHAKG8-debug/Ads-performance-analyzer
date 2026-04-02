@@ -468,6 +468,14 @@ def main():
         st.error(str(e))
         return
 
+    # ── Check API key ──
+    from config import LLM_PROVIDER, OPENAI_API_KEY, GEMINI_API_KEY
+    api_key_ok = True
+    if LLM_PROVIDER == "gemini" and not GEMINI_API_KEY:
+        api_key_ok = False
+    elif LLM_PROVIDER != "gemini" and not OPENAI_API_KEY:
+        api_key_ok = False
+
     # ── Floating AI Orb (bottom-right) ──
     st.markdown(
         '<div class="floating-orb-container"><div class="floating-orb-large"></div></div>',
@@ -664,6 +672,16 @@ def main():
         st.markdown('</div>', unsafe_allow_html=True)
 
     if ask_clicked and question:
+        # Check API key first
+        if not api_key_ok:
+            st.error(
+                "❌ **API key not configured!** "
+                f"You are using `{LLM_PROVIDER}` as LLM provider but no API key is set.\n\n"
+                "**Local:** Create a `.env` file from `.env.example` and add your key.\n\n"
+                "**Streamlit Cloud:** Go to App Settings → Secrets and add your key."
+            )
+            return
+
         is_valid, validation_msg = validate_query(question)
         if not is_valid:
             st.warning(validation_msg)
@@ -710,12 +728,17 @@ def main():
 
                 log_query(question, answer, insight_text)
 
+                # Only rerun on success so errors stay visible
+                st.rerun()
+
             except Exception as e:
                 error_msg = str(e)
-                st.error(f"❌ Error: {error_msg}")
+                # Remove the user message we just added since the query failed
+                if (st.session_state.chat_messages
+                        and st.session_state.chat_messages[-1].get("role") == "user"):
+                    st.session_state.chat_messages.pop()
+                st.error(f"❌ **LLM Error:** {error_msg}")
                 log_query(question, "", error=error_msg)
-
-        st.rerun()
 
     # ── Proactive insights panel ──
     if show_proactive:
