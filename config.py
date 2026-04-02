@@ -38,7 +38,7 @@ OPENAI_MODEL = _get_secret("OPENAI_MODEL", "gpt-4o-mini")
 
 # ── Gemini settings ─────────────────────────────────────────────────────────
 GEMINI_API_KEY = _get_secret("GEMINI_API_KEY", "")
-GEMINI_MODEL = _get_secret("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = _get_secret("GEMINI_MODEL", "gemini-2.0-flash")
 
 # ── App behaviour ───────────────────────────────────────────────────────────
 MAX_SAMPLE_ROWS = 5        # rows sent to the LLM as context
